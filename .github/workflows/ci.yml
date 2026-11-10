@@ -25,6 +25,8 @@ jobs:
           DATABASE_PATH: ${{ runner.temp }}/ci.db
           TELEGRAM_ID_SALT: ci-only
         run: npx tsx src/db/migrate.ts
+      - name: Tests
+        run: npm test
 
   secrets:
     runs-on: ubuntu-latest

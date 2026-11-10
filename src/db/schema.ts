@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { defaultMaxReferrals } from "./defaults.js";
 
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -28,7 +29,7 @@ export const users = sqliteTable("users", {
   referralCode: text("referral_code").unique(),
   referredBy: integer("referred_by").references((): any => users.id),
   referralCount: integer("referral_count").default(0).notNull(),
-  maxReferrals: integer("max_referrals").default(10).notNull(),
+  maxReferrals: integer("max_referrals").notNull().$defaultFn(defaultMaxReferrals),
   webToken: text("web_token").unique(),
   language: text("language", { enum: ["en", "fa", "pi"] })
     .default("pi")

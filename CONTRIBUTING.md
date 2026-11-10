@@ -17,6 +17,7 @@ You don't need any VPN backends running to work on the web app or admin panel; p
 ## Before opening a PR
 
 - `npm run build` passes (TypeScript for server and web app, plus the Vite build)
+- `npm test` passes
 - Migrations: change `src/db/schema.ts`, then `npm run db:generate`. Every statement in a migration file must be separated by `--> statement-breakpoint`; CI runs all migrations on a fresh database.
 - Never commit real hostnames, IPs, keys, tokens, Telegram links or screenshots with personal data. CI runs gitleaks; please also run it locally (`gitleaks detect --no-git`).
 - UI changes: check 375px and desktop widths, and Farsi (RTL). Include before/after screenshots.

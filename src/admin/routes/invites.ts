@@ -3,9 +3,9 @@ import { eq, isNull, desc } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
 import { db } from "../../db/index.js";
 import { users } from "../../db/schema.js";
-import { config } from "../../config.js";
 import { hashTelegramId } from "../../utils/hash.js";
 import { getNumber, getBoolean, getString } from "../../settings.js";
+import { defaultMaxReferrals } from "../../db/defaults.js";
 
 const invitesRouter = new Hono();
 
@@ -54,8 +54,8 @@ invitesRouter.post("/invites", async (c) => {
   const code = generateReferralCode();
   let label = body.label || "Admin Invite";
   if (label.length > 100) label = label.slice(0, 100);
-  let maxReferrals = typeof body.maxReferrals === "number" ? body.maxReferrals : config.maxReferrals;
-  if (!Number.isInteger(maxReferrals) || maxReferrals < 0) maxReferrals = config.maxReferrals;
+  let maxReferrals = typeof body.maxReferrals === "number" ? body.maxReferrals : defaultMaxReferrals();
+  if (!Number.isInteger(maxReferrals) || maxReferrals < 0) maxReferrals = defaultMaxReferrals();
   if (maxReferrals > 10000) maxReferrals = 10000;
 
   await db.insert(users).values({

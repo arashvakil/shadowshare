@@ -13,6 +13,7 @@ import { mieru } from "../../mieru/instance.js";
 import { hashTelegramId } from "../../utils/hash.js";
 import { getNumber, getString } from "../../settings.js";
 import { config } from "../../config.js";
+import { defaultMaxReferrals } from "../../db/defaults.js";
 
 const usersRouter = new Hono();
 
@@ -144,8 +145,8 @@ usersRouter.post("/", async (c) => {
   const body = await c.req.json<{ label?: string; maxReferrals?: number }>().catch(() => ({} as { label?: string; maxReferrals?: number }));
   let label = (body.label || "Admin User").replace(/[<>&"']/g, "").trim();
   if (label.length > 100) label = label.slice(0, 100);
-  let maxReferrals = typeof body.maxReferrals === "number" ? body.maxReferrals : config.maxReferrals;
-  if (!Number.isInteger(maxReferrals) || maxReferrals < 0) maxReferrals = config.maxReferrals;
+  let maxReferrals = typeof body.maxReferrals === "number" ? body.maxReferrals : defaultMaxReferrals();
+  if (!Number.isInteger(maxReferrals) || maxReferrals < 0) maxReferrals = defaultMaxReferrals();
   if (maxReferrals > 10000) maxReferrals = 10000;
 
   const codeLen = getNumber("bot.referralCodeLength");

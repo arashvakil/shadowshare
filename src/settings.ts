@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { db } from "./db/index.js";
 import { settings } from "./db/schema.js";
 import { config } from "./config.js";
+import { setMaxReferralsProvider } from "./db/defaults.js";
 
 export interface SettingDefinition {
   key: string;
@@ -102,6 +103,9 @@ export function getNumber(key: string): number {
 export function getBoolean(key: string): boolean {
   return getRaw(key) === "true";
 }
+
+// New users get the admin-configured invite allowance (see db/defaults.ts).
+setMaxReferralsProvider(() => getNumber("bot.maxReferrals"));
 
 /** Get all settings with their current values and metadata. */
 export function getAllSettings(): Array<SettingDefinition & { currentValue: string }> {

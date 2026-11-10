@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { randomBytes } from "node:crypto";
+import { envMaxReferrals } from "./db/defaults.js";
 
 function required(key: string): string {
   const value = process.env[key];
@@ -24,7 +25,7 @@ export const config = {
     .filter(Boolean),
   telegramIdSalt: required("TELEGRAM_ID_SALT"),
   databasePath: process.env.DATABASE_PATH || "./data/shadowshare.db",
-  maxReferrals: parseInt(process.env.MAX_REFERRALS || "10", 10),
+  maxReferrals: envMaxReferrals(),
   apiPort: parseInt(process.env.API_PORT || "3101", 10),
   miniAppUrl: process.env.MINI_APP_URL || "",
   adminPassword: process.env.ADMIN_PASSWORD || "",  // validated at startup in server.ts

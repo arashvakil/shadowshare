@@ -90,6 +90,7 @@ npm run webapp:dev     # web app on :5173, proxies /api to :3101
 npm run build          # typecheck + build
 npm run db:generate    # new Drizzle migration after schema changes
 npm run db:migrate     # apply migrations
+npm test               # node:test suite in test/
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Security issues: [SECURITY.md](SECURITY.md).
