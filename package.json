@@ -20,22 +20,27 @@
     "db:migrate": "tsx src/db/migrate.ts"
   },
   "dependencies": {
-    "@hono/node-server": "^1.13.0",
+    "@hono/node-server": "^2.1.6",
     "@resvg/resvg-js": "^2.6.2",
     "better-sqlite3": "^9.6.0",
     "dotenv": "^16.4.7",
-    "drizzle-orm": "^0.38.4",
+    "drizzle-orm": "^0.45.4",
     "grammy": "^1.35.0",
-    "hono": "^4.7.0",
+    "hono": "^4.13.17",
     "qrcode-generator": "^1.4.4",
-    "undici": "^7.22.0"
+    "undici": "^7.30.2"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.13.5",
-    "drizzle-kit": "^0.30.5",
-    "tsx": "^4.19.3",
+    "drizzle-kit": "^0.31.11",
+    "tsx": "^4.23.15",
     "typescript": "^5.7.3",
-    "vite": "^6.2.0"
+    "vite": "^6.4.6"
+  },
+  "overrides": {
+    "@esbuild-kit/core-utils": {
+      "esbuild": "^0.25.12"
+    }
   }
 }
