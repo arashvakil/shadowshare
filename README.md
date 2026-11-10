@@ -1,42 +1,152 @@
-# ShadowShare
+<p align="center">
+  <img src="docs/images/hero.webp" alt="ShadowShare: the web app on three phones in front of the admin dashboard" width="100%">
+</p>
 
-A self-hosted web app (plus optional Telegram bot) that hands out censorship-resistant VPN access through invite chains. One person runs a server and invites a few people they trust; each of them can invite a few more. No public sign-up page, no passwords, no payments.
+<h1 align="center">ShadowShare</h1>
 
-Built for people in heavily censored networks (Iran, China, Russia and similar), where a public VPN service gets found and blocked quickly.
+<p align="center">
+  <b>Self-hosted, invite-only VPN for people behind heavy censorship.</b><br>
+  One person runs a server and shares a link. Everyone they trust is connected in about a minute,
+  with no accounts, passwords, payments or config files.
+</p>
+
+<p align="center">
+  <a href="https://github.com/arashvakil/shadowshare/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/arashvakil/shadowshare/ci.yml?branch=main&label=CI" alt="CI status"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-1a8a6c" alt="License: AGPL-3.0"></a>
+  <img src="https://img.shields.io/badge/languages-English%20%C2%B7%20%D9%81%D8%A7%D8%B1%D8%B3%DB%8C%20%C2%B7%20Finglish-1a8a6c" alt="English, Farsi, Finglish">
+  <img src="https://img.shields.io/badge/self--hosted-Docker%20Compose-1a8a6c" alt="Self-hosted with Docker Compose">
+</p>
+
+<p align="center">
+  <a href="#quick-start">Quick start</a> ·
+  <a href="docs/deploy.md">Deploy guide</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#admin-panel">Admin panel</a> ·
+  <a href="CONTRIBUTING.md">Contributing</a>
+</p>
+
+---
+
+Public VPN services in Iran, China and Russia get found and blocked within days. ShadowShare takes a different approach: **small, private networks of trust**. You run a server, invite a few people, and they invite a few more. There's no public sign-up page to find, and each server serves a handful of people instead of millions.
+
+- **About a minute from link to connected.** Open the link, pick a language, tap "Add to sing-box", done.
+- **Many protocols in one profile.** VLESS over CDN, Reality, ShadowTLS, Trojan and more. If one gets blocked, the user picks another from the same profile; no re-import needed.
+- **Fallbacks for the worst days.** SSH and DNS tunnels for when nothing else gets through, and an MTProto proxy that keeps Telegram working.
+- **Built for the people using it.** Native Farsi with right-to-left layout and Finglish, large touch targets, QR codes, one-tap import.
+- **Nothing worth seizing.** No emails, no phone numbers, no passwords. Telegram IDs are HMAC-hashed and web tokens are 256-bit.
 
 ## How it works
 
-1. An operator deploys ShadowShare on a VPS and shares an invite link.
-2. The recipient opens it in a browser, picks a language, and gets VPN profiles immediately.
-3. A guided wizard walks them through one client app (sing-box, Hiddify or AmneziaVPN) with 1-tap import links, copy buttons and QR codes.
-4. They get their own invite links (10 by default) to pass on.
+```mermaid
+flowchart LR
+    O["🛠️ Operator<br/>runs the server"] -->|invite link| A["Sara"]
+    O -->|invite link| B["Reza"]
+    A -->|her own links| C["Maryam"]
+    A --> D["Ali"]
+    B --> E["Neda"]
+    C --> F["…"]
+```
 
-## Protocols
+Every invitee gets their own invite links, 10 by default and adjustable in the admin panel. Access spreads person to person, and you can revoke anyone from the admin panel.
 
-Censors detect plain WireGuard and OpenVPN easily, so ShadowShare layers several transports and lets clients fail over between them:
+<table>
+  <tr>
+    <td align="center" width="25%"><img src="docs/images/web-language.webp" alt="Language picker" width="200"></td>
+    <td align="center" width="25%"><img src="docs/images/web-picker.webp" alt="App picker" width="200"></td>
+    <td align="center" width="25%"><img src="docs/images/web-wizard.webp" alt="Setup wizard" width="200"></td>
+    <td align="center" width="25%"><img src="docs/images/web-dashboard.webp" alt="Dashboard" width="200"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>1. Open the invite</b><br><sub>Pick English, فارسی or Finglish. The invite is redeemed right away.</sub></td>
+    <td align="center"><b>2. Choose an app</b><br><sub>sing-box, Hiddify or AmneziaVPN. Free and open source.</sub></td>
+    <td align="center"><b>3. One-tap setup</b><br><sub>Install the app, tap "Add to sing-box", and you're connected.</sub></td>
+    <td align="center"><b>4. Dashboard</b><br><sub>Every profile, copy button and QR code in one place.</sub></td>
+  </tr>
+</table>
 
-| Transport | Path | Notes |
-|---|---|---|
-| VLESS + WebSocket / gRPC / XHTTP / HTTPUpgrade | via Cloudflare CDN | Looks like ordinary HTTPS to a CDN |
-| VLESS + Reality (Vision) and XHTTP + Reality | direct, :443 | Mimics a real TLS site you choose |
-| ShadowTLS v3 + Shadowsocks, Trojan | direct, :443 | SNI-multiplexed by Caddy L4 |
-| VLESS via Cloudflare Worker relay | `*.workers.dev` | Useful when proxied-domain IP ranges are blocked |
-| Hysteria2, TUIC | UDP | Fast where UDP isn't filtered |
-| AmneziaWG | UDP | Obfuscated WireGuard |
-| OpenVPN + Cloak | :4443 | Classic VPN disguised as HTTPS |
-| DNS tunnels (DNSTT, Slipstream, MasterDnsVPN) | UDP :53 | Last resort, slow (~1 Mbps) |
-| SSH-direct (NPV Tunnel), MTProto proxy | :2222, :443 | Shared-credential fallbacks; MTProto is Telegram-only |
+## Share it with people you trust
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/images/web-invite.webp" alt="Invite card with share link" width="92%">
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/images/web-code.webp" alt="Manual invite code entry" width="92%">
+    </td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Invite links</b><br><sub>Each user sees how many invites they have left and shares a link through the system share sheet. The admin sets the default allowance.</sub></td>
+    <td valign="top"><b>Or just a code</b><br><sub>When a link can't be opened, someone can type the 8-character code, the <code>ref_</code> form or the whole link.</sub></td>
+  </tr>
+</table>
+
+## When things get blocked
+
+<table>
+  <tr>
+    <td width="45%" valign="top"><img src="docs/images/web-tunnels.webp" alt="Backup tunnels: SSH and DNS" width="100%"></td>
+    <td width="55%" valign="top">
+
+Censors detect plain WireGuard and OpenVPN easily, so ShadowShare layers several transports. One sing-box profile carries all of them. Its default <code>auto</code> mode picks a working CDN route, and users can switch to any other connection in the app.
+
+| Transport | Path |
+|---|---|
+| VLESS + WS / gRPC / XHTTP / HTTPUpgrade | via Cloudflare CDN |
+| VLESS + Reality, XHTTP + Reality | direct :443 |
+| ShadowTLS v3, Trojan | direct :443, SNI-routed |
+| VLESS via Cloudflare Worker | `*.workers.dev` |
+| Hysteria2, TUIC | UDP |
+| AmneziaWG | obfuscated WireGuard |
+| OpenVPN + Cloak | looks like HTTPS |
+| SSH tunnel (NPV), DNS tunnels | last resort |
+| MTProto proxy | Telegram only |
 
 Every protocol is optional and turns on only when its env vars are set.
 
-## Features
+</td>
+  </tr>
+</table>
 
-- **Web app at `/app`** (vanilla TypeScript, ~110 KB) in English, Farsi (RTL) and Finglish
-- **Optional Telegram bot** (grammY) with the same flow
-- **sing-box subscription** with automatic outbound selection, plus V2Ray and AmneziaVPN formats
-- **Admin panel**: users, activity tiers, bandwidth, invite codes, feature flags, kill switch
-- **Privacy**: Telegram IDs are HMAC-hashed; web tokens are 256-bit; no email or phone collected
-- **Docker Compose** for the whole stack
+## In their language
+
+<table>
+  <tr>
+    <td width="35%" valign="top"><img src="docs/images/web-dashboard-fa.webp" alt="Dashboard in Farsi, right to left" width="100%"></td>
+    <td width="65%" valign="top">
+
+Every screen ships in **English**, **فارسی** (full right-to-left layout) and **Finglish**, Farsi written in Latin letters the way many people actually type it.
+
+The web app is plain TypeScript with no framework, about 110 KB. It loads fast on throttled mobile networks and works in any modern browser. An optional **Telegram bot** (grammY) offers the same flow inside Telegram.
+
+</td>
+  </tr>
+</table>
+
+## Admin panel
+
+<p align="center">
+  <img src="docs/images/admin-dashboard.webp" alt="Admin dashboard with users, bandwidth and security events" width="100%">
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/admin-users.webp" alt="Users with activity status and bandwidth" width="100%"></td>
+    <td width="50%"><img src="docs/images/admin-monitoring.webp" alt="Monitoring timeline" width="100%"></td>
+  </tr>
+  <tr>
+    <td><b>Users</b><br><sub>Filter by Active, Idle, Never connected or Revoked. Per-user bandwidth, last seen, and one-click revoke or restore.</sub></td>
+    <td><b>Monitoring</b><br><sub>Online users over time and protocol health. It logs an event when many users drop off at once, which often means a protocol just got blocked.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/images/admin-invites.webp" alt="Invite links" width="100%"></td>
+    <td width="50%"><img src="docs/images/admin-settings.webp" alt="Protocol feature flags" width="100%"></td>
+  </tr>
+  <tr>
+    <td><b>Invites</b><br><sub>Labelled invite links with their own limits, for a family group, a class or a book club.</sub></td>
+    <td><b>Feature flags</b><br><sub>Turn protocols, tunnels and sign-ups on or off live, without a redeploy. In an emergency, the kill switch revokes every account and wipes the user database in one step.</sub></td>
+  </tr>
+</table>
 
 ## Architecture
 
@@ -54,7 +164,7 @@ Caddy: :80 CDN backends · :443 L4 SNI router · :8443 admin/API/subscriptions
 
 ## Quick start
 
-You need a VPS with Docker, a domain on Cloudflare (free plan is fine), and about 30 minutes.
+You need a VPS with Docker, a domain on Cloudflare (the free plan is fine), and about 30 minutes.
 
 ```bash
 git clone https://github.com/arashvakil/shadowshare.git
@@ -69,7 +179,8 @@ docker compose up -d
 
 [docs/deploy.md](docs/deploy.md) is the full walkthrough: DNS records, Cloudflare settings, Reality keys, choosing cover SNIs and paths, enabling features in the admin panel, and creating the first invite.
 
-**Pick your own values.** Don't reuse the example paths (`/ws`, `/hu`, ...), cover domains or AWG obfuscation parameters as shipped. Censors fingerprint public defaults.
+> [!IMPORTANT]
+> **Pick your own values.** Don't reuse the example paths (`/ws`, `/hu`, ...), cover domains or AWG obfuscation parameters as shipped. Censors fingerprint public defaults.
 
 ## Client apps
 
@@ -79,6 +190,7 @@ docker compose up -d
 | Hiddify | iOS, Android | Same subscription, friendlier UI |
 | V2rayNG / Streisand | Android / iOS | VLESS variants incl. XHTTP |
 | AmneziaVPN | iOS, Android | AmneziaWG, OpenVPN + Cloak |
+| NapsternetV / NpvTunnel | Android / iOS | SSH tunnel |
 | SlipNet / HTTP Injector | Android / iOS | DNS tunnel |
 
 ## Development
@@ -91,7 +203,10 @@ npm run build          # typecheck + build
 npm run db:generate    # new Drizzle migration after schema changes
 npm run db:migrate     # apply migrations
 npm test               # node:test suite in test/
+npm run screenshots    # regenerate docs/images from a seeded demo (after npm run build)
 ```
+
+The screenshots above come from `npm run screenshots`. It runs the real server against a throwaway database of fictional users, so every name, host and key you see is made up.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Security issues: [SECURITY.md](SECURITY.md).
 

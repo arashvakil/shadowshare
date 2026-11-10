@@ -82,6 +82,7 @@ usersRouter.get("/", async (c) => {
   if (search) {
     query = query.where(
       or(
+        like(users.label, `%${search}%`),
         like(users.referralCode, `%${search}%`),
         like(users.telegramIdHash, `%${search}%`),
       ),

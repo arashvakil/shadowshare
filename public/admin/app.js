@@ -322,7 +322,7 @@ const app = {
       document.getElementById("bandwidth-updated").textContent =
         new Date().toLocaleTimeString();
 
-      const labels = withBandwidth.map(u => u.referralCode || u.telegramIdHash.slice(0, 8));
+      const labels = withBandwidth.map(u => this.displayName(u));
       const dataBytes = withBandwidth.map(u => u.transferBytes);
       const barColors = dataBytes.map((_, i) => this.chartColors[i % this.chartColors.length]);
 
@@ -906,8 +906,8 @@ const app = {
                 <td class="col-check"><input type="checkbox" onchange="app.toggleSelectUser(${u.id}, this.checked, event); event.stopPropagation()" ${this.selectedUserIds.has(u.id) ? "checked" : ""}></td>
                 <td>
                   <div class="user-cell">
-                    <span class="user-cell-name">${u.referralCode ? this.esc(u.referralCode) : this.esc(u.telegramIdHash.slice(0, 8))}</span>
-                    <span class="user-cell-sub">${u.referralCode ? this.esc(u.telegramIdHash.slice(0, 8)) : ""} · ${u.referralCount}/${u.maxReferrals} refs</span>
+                    <span class="user-cell-name">${this.esc(this.displayName(u))}</span>
+                    <span class="user-cell-sub">${this.esc(u.label ? (u.referralCode || u.telegramIdHash.slice(0, 8)) : (u.referralCode ? u.telegramIdHash.slice(0, 8) : ""))} · ${u.referralCount}/${u.maxReferrals} refs</span>
                   </div>
                 </td>
                 <td>${this.tierBadge(u.activityTier, u.marzbanOnlineAt)}</td>
@@ -946,7 +946,7 @@ const app = {
             <div class="user-card-header">
               <label class="card-check" onclick="event.stopPropagation()"><input type="checkbox" onchange="app.toggleSelectUser(${u.id}, this.checked, event)" ${this.selectedUserIds.has(u.id) ? "checked" : ""}></label>
               <div class="user-card-identity">
-                <span class="user-card-id">${u.referralCode ? this.esc(u.referralCode) : this.esc(u.telegramIdHash.slice(0, 8))}</span>
+                <span class="user-card-id">${this.esc(this.displayName(u))}</span>
                 ${this.protocolDots(u.protocols)}
               </div>
               ${this.tierBadge(u.activityTier, u.marzbanOnlineAt)}
@@ -1009,7 +1009,7 @@ const app = {
       modal.innerHTML = `
         <h2>User Details</h2>
         <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px">
-          <span style="font-family:var(--font-mono);font-size:13px;color:var(--text-secondary)">#${u.id} ${u.referralCode ? this.esc(u.referralCode) : this.esc(u.telegramIdHash.slice(0, 8))}</span>
+          <span style="font-family:var(--font-mono);font-size:13px;color:var(--text-secondary)">#${u.id} ${this.esc(this.displayName(u))}</span>
           ${this.tierBadge(u.activityTier, u.marzbanOnlineAt)}
           ${this.protocolDots(u.protocols)}
         </div>
@@ -1086,7 +1086,7 @@ const app = {
           <div class="modal-field">
             <label>Referred Users</label>
             <ul class="referral-list">
-              ${u.referrals.map(r => `<li>${r.referralCode || r.telegramIdHash.slice(0, 8)} (${r.isActive ? "active" : "revoked"})</li>`).join("")}
+              ${u.referrals.map(r => `<li>${this.esc(this.displayName(r))} (${r.isActive ? "active" : "revoked"})</li>`).join("")}
             </ul>
           </div>
         ` : ""}
@@ -1741,6 +1741,11 @@ const app = {
   },
 
   // Helpers
+  /** Admin-facing name: the label if set, else the referral code, else a hash prefix. */
+  displayName(u) {
+    return u.label || u.referralCode || (u.telegramIdHash || "").slice(0, 8) || `#${u.id}`;
+  },
+
   esc(s) {
     const d = document.createElement("div");
     d.textContent = s;
@@ -2288,6 +2293,15 @@ const app = {
 
   readableKey(key) {
     const name = key.includes(".") ? key.split(".").pop() : key;
+    // Proper names that camelCase splitting would mangle ("Amnezia Wg", "Shadow Tls").
+    const NAMES = {
+      amneziaWg: "AmneziaWG", shadowTls: "ShadowTLS", openvpnCloak: "OpenVPN + Cloak", naiveProxy: "NaiveProxy",
+      naiveProxyQuic: "NaiveProxy QUIC", hysteria2: "Hysteria2", tuic: "TUIC", sshTunnel: "SSH Tunnel",
+      dnstt: "DNSTT", npvTunnel: "NPV Tunnel", mtprotoProxy: "MTProto Proxy", masterDnsTunnel: "MasterDNS Tunnel",
+      qrCodes: "QR Codes", sessionTtlHrs: "Session TTL (hrs)", dnsResolvers: "DNS Resolvers", api: "API",
+      webApp: "Web App", appDomain: "App Domain",
+    };
+    if (NAMES[name]) return NAMES[name];
     return name
       .replace(/([A-Z])/g, " $1")
       .replace(/[._-]/g, " ")
