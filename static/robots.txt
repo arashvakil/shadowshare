@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /sub/
+Disallow: /feed/
+Disallow: /api/
+Disallow: /app/
+Disallow: /open/

@@ -1,0 +1,27 @@
+# Lightweight SSH tunnel container (Dropbear + badvpn-udpgw)
+# For NapsternetV / HTTP Injector SSH-Direct tunneling
+
+FROM ubuntu:24.04 AS builder
+
+RUN apt-get update && apt-get install -y cmake git build-essential golang-go && \
+    git clone https://github.com/ambrop72/badvpn.git /tmp/badvpn && \
+    cd /tmp/badvpn && \
+    mkdir build && cd build && \
+    cmake .. -DBUILD_NOTHING_BY_DEFAULT=1 -DBUILD_UDPGW=1 && \
+    make -j$(nproc) && \
+    cp udpgw/badvpn-udpgw /usr/local/bin/
+
+FROM ubuntu:24.04
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends dropbear-bin && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /usr/local/bin/badvpn-udpgw /usr/local/bin/
+
+COPY docker/sshtunnel-entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 2002 7300
+
+ENTRYPOINT ["/entrypoint.sh"]

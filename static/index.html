@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NovaCDN - Content Delivery Network</title>
+  <meta name="description" content="NovaCDN provides fast, reliable content delivery with global edge nodes and low-latency caching.">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="logo">Nova<span>CDN</span></a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#network">Network</a>
+        <a href="#docs">Docs</a>
+        <a href="#status">Status</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <h1>Fast. Global. Reliable.</h1>
+    <p>Accelerate your content delivery with our worldwide edge network. Low-latency caching, automatic failover, and real-time analytics.</p>
+    <div class="hero-actions">
+      <a href="#docs" class="btn btn-primary">Get Started</a>
+      <a href="#status" class="btn btn-secondary">View Status</a>
+    </div>
+  </header>
+
+  <main>
+    <section id="status" class="status-section">
+      <h2>System Status</h2>
+      <div class="status-grid">
+        <div class="status-card">
+          <div class="status-row">
+            <span class="indicator online"></span>
+            <span>Edge Network</span>
+          </div>
+          <span class="status-label">Operational</span>
+        </div>
+        <div class="status-card">
+          <div class="status-row">
+            <span class="indicator online"></span>
+            <span>API Gateway</span>
+          </div>
+          <span class="status-label">Operational</span>
+        </div>
+        <div class="status-card">
+          <div class="status-row">
+            <span class="indicator online"></span>
+            <span>Cache Layer</span>
+          </div>
+          <span class="status-label">Operational</span>
+        </div>
+        <div class="status-card">
+          <div class="status-row">
+            <span class="indicator online"></span>
+            <span>DNS Resolution</span>
+          </div>
+          <span class="status-label">Operational</span>
+        </div>
+      </div>
+      <p class="status-updated">Last checked: <span id="status-time"></span></p>
+    </section>
+
+    <section id="features" class="features-section">
+      <h2>Why NovaCDN</h2>
+      <div class="features-grid">
+        <div class="feature">
+          <div class="feature-icon">&#9889;</div>
+          <h3>Sub-50ms Latency</h3>
+          <p>Edge nodes in 40+ locations ensure your content is always close to your users.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">&#128274;</div>
+          <h3>TLS Everywhere</h3>
+          <p>Automatic HTTPS with HTTP/2 and HTTP/3 support. Free managed certificates.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">&#128200;</div>
+          <h3>Real-Time Analytics</h3>
+          <p>Monitor bandwidth, cache hit rates, and request patterns from a single dashboard.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">&#128736;</div>
+          <h3>Edge Compute</h3>
+          <p>Run custom logic at the edge with serverless workers. Transform, route, and cache dynamically.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="network" class="network-section">
+      <h2>Global Network</h2>
+      <div class="stats-row">
+        <div class="stat">
+          <span class="stat-value">42</span>
+          <span class="stat-label">Edge Locations</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">99.99%</span>
+          <span class="stat-label">Uptime SLA</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">15 Tbps</span>
+          <span class="stat-label">Network Capacity</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">2.1M</span>
+          <span class="stat-label">Requests/sec</span>
+        </div>
+      </div>
+      <div class="node-info">
+        <h3>This Edge Node</h3>
+        <table>
+          <tr><td>Region</td><td>EU-Central (Frankfurt)</td></tr>
+          <tr><td>Node ID</td><td id="node-id">eu-fra-07</td></tr>
+          <tr><td>Protocol</td><td>HTTP/2, HTTP/3</td></tr>
+          <tr><td>Cache</td><td>Warm</td></tr>
+          <tr><td>Software</td><td>NovaCDN Edge v4.2.1</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="docs" class="docs-section">
+      <h2>Quick Start</h2>
+      <div class="code-block">
+        <div class="code-header">
+          <span>Configure your origin</span>
+          <button class="copy-btn" onclick="this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500)">Copy</button>
+        </div>
+        <pre><code>curl -X POST https://api.novacdn.net/v1/zones \
+  -H "Authorization: Bearer $NOVA_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"domain":"example.com","origin":"origin.example.com"}'</code></pre>
+      </div>
+      <p class="docs-note">Full documentation available at <a href="#">docs.novacdn.net</a>. API reference, SDK guides, and tutorials included.</p>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">Nova<span>CDN</span></div>
+      <div class="footer-links">
+        <a href="#">Terms</a>
+        <a href="#">Privacy</a>
+        <a href="#">Status</a>
+        <a href="#">Contact</a>
+      </div>
+      <p class="footer-copy">&copy; 2026 NovaCDN Inc. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('status-time').textContent =
+      new Date().toLocaleString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', timeZoneName: 'short'
+      });
+  </script>
+</body>
+</html>

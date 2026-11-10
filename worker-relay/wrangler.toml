@@ -1,0 +1,7 @@
+name = "ws-relay"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+[vars]
+ORIGIN_HOST = "origin.example.com"
+ALLOWED_PATHS = "/ws,/hu"

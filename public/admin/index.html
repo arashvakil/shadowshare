@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShadowShare Admin</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+</head>
+<body>
+
+  <!-- Login Screen -->
+  <div id="login" class="login-wrap">
+    <div class="login-grid-bg"></div>
+    <div class="login-box">
+      <div class="login-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+      <h1>ShadowShare</h1>
+      <p>Authenticate to continue</p>
+      <div id="login-error" class="login-error"></div>
+      <form id="login-form">
+        <div class="input-group">
+          <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <input type="password" id="password" placeholder="Enter password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">
+          <span>Authenticate</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- App Shell -->
+  <div id="app" class="app">
+    <!-- Mobile sidebar overlay -->
+    <div class="sidebar-overlay" onclick="app.toggleSidebar()"></div>
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <span class="brand-text">Shadow<strong>Share</strong></span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="dashboard">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-tab="monitoring">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span>Monitoring</span>
+        </button>
+        <button class="nav-item" data-tab="invites">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          <span>Invites</span>
+        </button>
+        <button class="nav-item" data-tab="users">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Users</span>
+        </button>
+        <button class="nav-item" data-tab="settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Settings</span>
+        </button>
+        <button class="nav-item nav-item-danger" data-tab="killswitch">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+          <span>Kill Switch</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span id="kill-indicator"></span>
+        <button class="btn-logout" onclick="app.logout()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span>Log out</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="content-header">
+        <div class="header-left">
+          <button class="mobile-menu-btn" onclick="app.toggleSidebar()" aria-label="Open menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <h1 id="page-title">Dashboard</h1>
+        </div>
+        <div class="header-meta">
+          <div class="header-status" id="header-status">
+            <span class="pulse-dot pulse-dot-ok"></span>
+            <span>System Online</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="content">
+        <!-- Dashboard -->
+        <div id="tab-dashboard" class="tab-content active">
+          <div id="stats-grid" class="stats-grid"></div>
+          <div id="bandwidth-section" class="chart-section" style="display:none">
+            <div class="section-header">
+              <h3>Bandwidth Usage</h3>
+              <span id="bandwidth-updated" class="meta-text"></span>
+            </div>
+            <div class="chart-grid">
+              <div class="chart-card">
+                <canvas id="bandwidth-bar"></canvas>
+              </div>
+              <div class="chart-card chart-card-sm">
+                <canvas id="bandwidth-donut"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div id="usage-history-section" class="chart-section" style="display:none">
+            <div class="section-header">
+              <h3>Usage Over Time</h3>
+              <span id="usage-history-info" class="meta-text"></span>
+            </div>
+            <div class="chart-card" style="height:320px">
+              <canvas id="usage-history-chart"></canvas>
+            </div>
+          </div>
+
+          <div id="worker-analytics" class="panel" style="display:none">
+            <div class="panel-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              <h3>CF Worker Relay</h3>
+              <span id="worker-plan-badge" class="badge badge-idle" style="margin-left:auto">Free Plan</span>
+            </div>
+            <div id="worker-stats-row" class="stats-grid" style="margin-bottom:12px"></div>
+            <div id="worker-chart-wrap" class="chart-card" style="height:200px">
+              <canvas id="worker-chart"></canvas>
+            </div>
+          </div>
+
+          <div id="security-section" class="panel" style="display:none">
+            <div class="panel-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <h3>Admin Security</h3>
+              <span id="security-status-badge" class="badge badge-idle" style="margin-left:auto">Checking...</span>
+            </div>
+            <div id="security-stats-row" class="stats-grid" style="margin-bottom:12px"></div>
+            <div id="security-blocked-ips"></div>
+            <div id="security-recent-events"></div>
+          </div>
+
+          <div id="billing-section" class="panel" style="display:none">
+            <div class="panel-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              <h3>Infrastructure Costs</h3>
+              <span id="billing-period" class="meta-text" style="margin-left:auto"></span>
+            </div>
+            <div id="billing-totals" class="stats-grid" style="margin-bottom:12px"></div>
+            <div id="billing-errors"></div>
+            <div id="billing-items"></div>
+          </div>
+
+        </div>
+
+        <!-- Monitoring -->
+        <div id="tab-monitoring" class="tab-content">
+          <div class="section-header">
+            <h3>Protocol Health</h3>
+            <span class="meta-text" id="monitoring-last-poll"></span>
+          </div>
+          <div id="protocol-health" class="protocol-health-grid"></div>
+
+          <div class="chart-section" style="margin-top:24px">
+            <div class="section-header">
+              <h3>Active Users Timeline</h3>
+              <div class="timeline-range-btns">
+                <button class="btn btn-ghost btn-sm timeline-range active" data-hours="6">6h</button>
+                <button class="btn btn-ghost btn-sm timeline-range" data-hours="24">24h</button>
+                <button class="btn btn-ghost btn-sm timeline-range" data-hours="72">3d</button>
+                <button class="btn btn-ghost btn-sm timeline-range" data-hours="168">7d</button>
+              </div>
+            </div>
+            <div class="chart-card" style="height:320px">
+              <canvas id="connectivity-timeline-chart"></canvas>
+            </div>
+          </div>
+
+          <div class="panel" id="masterdns-panel" style="margin-top:24px;display:none">
+            <div class="panel-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <h3>MasterDNS Tunnel</h3>
+              <span id="masterdns-status-badge" class="badge badge-idle" style="margin-left:auto">Checking...</span>
+            </div>
+            <div id="masterdns-stats-row" class="stats-grid" style="margin-bottom:12px"></div>
+            <div id="masterdns-container-row" class="stats-grid" style="margin-bottom:12px"></div>
+
+            <div class="chart-section" style="margin-top:16px">
+              <div class="section-header" style="margin-bottom:8px">
+                <h4 class="panel-subtitle">Usage over time</h4>
+                <div class="time-range-buttons" id="masterdns-history-range" style="margin-left:auto">
+                  <button class="btn btn-ghost btn-sm" data-hours="6">6h</button>
+                  <button class="btn btn-ghost btn-sm active" data-hours="24">24h</button>
+                  <button class="btn btn-ghost btn-sm" data-hours="168">7d</button>
+                </div>
+              </div>
+              <div class="chart-card" style="height:240px">
+                <canvas id="masterdns-history-chart"></canvas>
+              </div>
+            </div>
+
+            <div class="section-header" style="margin-top:16px;margin-bottom:8px">
+              <h4 class="panel-subtitle">Top destinations</h4>
+            </div>
+            <div id="masterdns-destinations"></div>
+          </div>
+
+          <div class="panel" id="dnstt-panel" style="margin-top:24px;display:none">
+            <div class="panel-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              <h3>DNS Tunnel</h3>
+              <span id="dnstt-status-badge" class="badge badge-idle" style="margin-left:auto">Checking...</span>
+            </div>
+            <div id="dnstt-stats-row" class="stats-grid" style="margin-bottom:12px"></div>
+            <div id="dnstt-sources"></div>
+          </div>
+
+          <div class="panel" id="mtproto-panel" style="margin-top:24px;display:none">
+            <div class="panel-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <h3>MTProto Proxy</h3>
+              <span id="mtproto-status-badge" class="badge badge-idle" style="margin-left:auto">Checking...</span>
+            </div>
+            <div id="mtproto-stats-row" class="stats-grid" style="margin-bottom:12px"></div>
+          </div>
+
+          <div class="panel" id="dns-resolvers-panel" style="margin-top:24px;display:none">
+            <div class="panel-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <h3>DNS Resolver Pool</h3>
+              <button class="btn btn-ghost btn-sm" id="dns-resolvers-refresh-btn" onclick="app.refreshDnsResolvers()" style="margin-left:auto">
+                <svg class="refresh-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                Refresh Now
+              </button>
+            </div>
+            <div id="dns-resolvers-list" style="margin-top:8px"></div>
+          </div>
+
+          <div class="section-header" style="margin-top:24px">
+            <h3>Connectivity Events</h3>
+          </div>
+          <div id="connectivity-events" class="events-list"></div>
+        </div>
+
+        <!-- Invites -->
+        <div id="tab-invites" class="tab-content">
+          <div class="section-header">
+            <h3>Invite Links</h3>
+            <button class="btn btn-primary btn-sm" onclick="app.createInvite()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New Invite
+            </button>
+          </div>
+          <div id="invites-list"></div>
+        </div>
+
+        <!-- Users -->
+        <div id="tab-users" class="tab-content">
+          <div class="table-toolbar">
+            <div class="search-wrap">
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="search" id="user-search" class="search-input" placeholder="Search users...">
+            </div>
+            <div class="toolbar-actions">
+              <span id="user-count" class="user-count"></span>
+              <button class="btn btn-primary btn-sm" onclick="app.createUser()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                New User
+              </button>
+              <button class="btn btn-ghost btn-sm" id="refresh-btn" onclick="app.loadUsers()">
+                <svg class="refresh-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              </button>
+            </div>
+          </div>
+          <div id="bulk-bar" class="bulk-bar">
+            <span class="bulk-count">0 selected</span>
+            <button class="btn btn-sm btn-danger" onclick="app.bulkDelete()">Delete Selected</button>
+            <button class="btn btn-ghost btn-sm" onclick="app.toggleSelectAll(false)">Clear</button>
+          </div>
+          <div id="users-table-wrap">
+            <div class="loading">Loading users...</div>
+          </div>
+        </div>
+
+        <!-- Settings -->
+        <div id="tab-settings" class="tab-content">
+
+          <!-- Bot & App -->
+          <div class="settings-section">
+            <h4 class="settings-section-title settings-title-bot">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Bot &amp; App
+            </h4>
+            <div id="settings-bot" class="settings-grid"></div>
+            <div id="settings-web" class="settings-grid" style="margin-top:6px"></div>
+          </div>
+
+          <!-- Distribution & UI -->
+          <div class="settings-section">
+            <h4 class="settings-section-title settings-title-distribution">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              Distribution &amp; UI
+            </h4>
+            <div id="settings-distribution" class="settings-toggle-grid"></div>
+          </div>
+
+          <!-- VPN Protocols -->
+          <div class="settings-section">
+            <h4 class="settings-section-title settings-title-vpn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              VPN Protocols
+            </h4>
+            <div id="settings-protocols" class="settings-toggle-grid"></div>
+          </div>
+
+          <!-- Tunnels & Fallbacks -->
+          <div class="settings-section">
+            <h4 class="settings-section-title settings-title-tunnels">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              Tunnels &amp; Fallbacks
+            </h4>
+            <div id="settings-tunnels" class="settings-toggle-grid"></div>
+          </div>
+
+          <!-- Service -->
+          <div class="settings-section">
+            <h4 class="settings-section-title settings-title-service">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              Service
+            </h4>
+            <div id="settings-service" class="settings-grid"></div>
+          </div>
+
+          <div class="settings-save-bar">
+            <span class="unsaved-indicator" id="unsaved-indicator">Unsaved changes</span>
+            <button class="btn btn-primary btn-sm" id="save-settings-btn" onclick="app.saveSettings()" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+              Save Changes
+            </button>
+          </div>
+        </div>
+
+        <!-- Kill Switch -->
+        <div id="tab-killswitch" class="tab-content">
+          <div class="kill-section">
+            <div class="kill-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <h2>Kill Switch</h2>
+            <p>Emergency system shutdown. Revokes all VPN keys, wipes the database, and stops the bot.</p>
+            <div id="kill-status-display"></div>
+            <div id="kill-actions"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div id="confirm-overlay" class="modal-overlay" onclick="if(event.target===this)app.closeConfirm()">
+    <div class="modal confirm-modal">
+      <h2 id="confirm-title">Confirm</h2>
+      <p id="confirm-message"></p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost btn-sm" onclick="app.closeConfirm()">Cancel</button>
+        <button class="btn btn-sm" id="confirm-action-btn" onclick="app.resolveConfirm()">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prompt Modal -->
+  <div id="prompt-overlay" class="modal-overlay" onclick="if(event.target===this)app.closePrompt()">
+    <div class="modal confirm-modal">
+      <h2 id="prompt-title">Input</h2>
+      <p id="prompt-message"></p>
+      <input type="text" id="prompt-input" class="prompt-modal-input">
+      <div class="modal-actions">
+        <button class="btn btn-ghost btn-sm" onclick="app.closePrompt()">Cancel</button>
+        <button class="btn btn-primary btn-sm" onclick="app.resolvePrompt()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Detail Modal -->
+  <div id="modal-overlay" class="modal-overlay" onclick="if(event.target===this)app.closeModal()">
+    <div class="modal" id="user-modal"></div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

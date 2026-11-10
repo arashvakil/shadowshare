@@ -1,0 +1,18 @@
+FROM debian:bookworm-slim AS builder
+ARG MITA_VERSION=3.29.0
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl && \
+    rm -rf /var/lib/apt/lists/* && \
+    curl -fsSL "https://github.com/enfein/mieru/releases/download/v${MITA_VERSION}/mita_${MITA_VERSION}_linux_amd64.tar.gz" \
+      -o /tmp/mita.tar.gz && \
+    tar -xzf /tmp/mita.tar.gz -C /usr/local/bin && \
+    chmod +x /usr/local/bin/mita && \
+    rm /tmp/mita.tar.gz
+
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && \
+    rm -rf /var/lib/apt/lists/* && \
+    useradd --system --no-create-home --shell /usr/sbin/nologin mita
+COPY --from=builder /usr/local/bin/mita /usr/local/bin/mita
+COPY mieru-entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]

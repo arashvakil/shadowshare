@@ -1,0 +1,41 @@
+{
+  "name": "shadowshare",
+  "version": "1.0.0",
+  "description": "Self-hosted, invite-based distribution of censorship-resistant VPN access (web app + Telegram bot)",
+  "license": "AGPL-3.0-only",
+  "author": "ShadowShare contributors",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-user/shadowshare.git"
+  },
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc && vite build",
+    "start": "node dist/server.js",
+    "webapp:dev": "vite",
+    "webapp:build": "vite build",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/db/migrate.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.0",
+    "@resvg/resvg-js": "^2.6.2",
+    "better-sqlite3": "^9.6.0",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.38.4",
+    "grammy": "^1.35.0",
+    "hono": "^4.7.0",
+    "qrcode-generator": "^1.4.4",
+    "undici": "^7.22.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.13.5",
+    "drizzle-kit": "^0.30.5",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3",
+    "vite": "^6.2.0"
+  }
+}

@@ -1,0 +1,31 @@
+# Build amneziawg-go (userspace WireGuard) from source
+FROM golang:1.24-alpine AS go-builder
+RUN apk add --no-cache git
+WORKDIR /build
+RUN git clone --depth 1 https://github.com/amnezia-vpn/amneziawg-go.git
+WORKDIR /build/amneziawg-go
+RUN go build -v -o amneziawg-go ./
+
+# Build awg / awg-quick CLI tools from source
+FROM alpine:3.20 AS tools-builder
+RUN apk add --no-cache git make gcc musl-dev linux-headers
+WORKDIR /build
+RUN git clone --depth 1 https://github.com/amnezia-vpn/amneziawg-tools.git
+WORKDIR /build/amneziawg-tools/src
+RUN make
+
+# Minimal runtime image
+FROM alpine:3.20
+RUN apk add --no-cache bash iptables iproute2 ip6tables
+
+COPY --from=go-builder /build/amneziawg-go/amneziawg-go /usr/bin/amneziawg-go
+COPY --from=tools-builder /build/amneziawg-tools/src/wg /usr/bin/awg
+COPY --from=tools-builder /build/amneziawg-tools/src/wg-quick/linux.bash /usr/bin/awg-quick
+RUN chmod +x /usr/bin/amneziawg-go /usr/bin/awg /usr/bin/awg-quick \
+    && ln -s /usr/bin/awg /usr/bin/wg \
+    && ln -s /usr/bin/awg-quick /usr/bin/wg-quick
+
+COPY amneziawg-entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

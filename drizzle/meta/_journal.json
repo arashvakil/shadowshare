@@ -1,0 +1,160 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1772555661889,
+      "tag": "0000_cultured_dormammu",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1772557867579,
+      "tag": "0001_silky_thena",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1772640000000,
+      "tag": "0002_referral_system",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1772726400000,
+      "tag": "0003_remove_pii",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1772812800000,
+      "tag": "0004_activity_tracking",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1772899200000,
+      "tag": "0005_snapshot_key_labels",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1772985600000,
+      "tag": "0006_telegram_lang_code",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1773072000000,
+      "tag": "0007_settings",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1773158400000,
+      "tag": "0008_marzban_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1773244800000,
+      "tag": "0009_web_token",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1773331200000,
+      "tag": "0010_amneziawg_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1773417600000,
+      "tag": "0011_openvpn_cloak",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1773504000000,
+      "tag": "0012_naiveproxy",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1773590400000,
+      "tag": "0013_shadowtls",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1773676800000,
+      "tag": "0014_hysteria2_tuic_trojan",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "6",
+      "when": 1773763200000,
+      "tag": "0015_connectivity_monitoring",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1773849600000,
+      "tag": "0016_udp_enabled",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1773936000000,
+      "tag": "0017_dnstt",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1774022400000,
+      "tag": "0018_ssh_mieru",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1774108800000,
+      "tag": "0019_dns_resolvers",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1778457600000,
+      "tag": "0020_masterdns_history",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "6",
+      "when": 1782950400000,
+      "tag": "0021_drop_outline",
+      "breakpoints": true
+    }
+  ]
+}

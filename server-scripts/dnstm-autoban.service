@@ -1,0 +1,16 @@
+[Unit]
+Description=ShadowShare dnstm scanner auto-ban
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/dnstm-autoban.sh
+Restart=on-failure
+RestartSec=10
+StandardOutput=append:/var/log/dnstm-autoban.log
+StandardError=append:/var/log/dnstm-autoban.log
+
+[Install]
+WantedBy=multi-user.target

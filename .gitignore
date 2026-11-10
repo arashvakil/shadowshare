@@ -1,0 +1,25 @@
+node_modules/
+dist/
+data/
+.env
+*.db
+*.db-journal
+*.db-wal
+
+# Runtime data - don't push to repo
+marzban-data/
+.playwright-mcp/
+.env.marzban
+*.pem
+
+# Secrets and local state (never commit)
+.env.*
+!.env.example
+!.env.marzban.example
+*.key
+*.bak
+*.orig
+xray_config.json
+.claude/
+.DS_Store
+coverage/
