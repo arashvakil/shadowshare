@@ -6,7 +6,7 @@
   "author": "ShadowShare contributors",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-user/shadowshare.git"
+    "url": "https://github.com/arashvakil/shadowshare.git"
   },
   "private": true,
   "type": "module",

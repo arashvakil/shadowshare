@@ -57,7 +57,7 @@ Caddy: :80 CDN backends · :443 L4 SNI router · :8443 admin/API/subscriptions
 You need a VPS with Docker, a domain on Cloudflare (free plan is fine), and about 30 minutes.
 
 ```bash
-git clone https://github.com/your-user/shadowshare.git
+git clone https://github.com/arashvakil/shadowshare.git
 cd shadowshare
 cp .env.example .env
 cp .env.marzban.example .env.marzban
