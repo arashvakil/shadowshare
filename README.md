@@ -81,6 +81,20 @@ Every invitee gets their own invite links, 10 by default and adjustable in the a
   </tr>
 </table>
 
+### Distribution is the hard part
+
+Running the server is the easy half. Getting access into people's hands is harder. During a shutdown, a URL you paste into a chat can be blocked, the domain behind it can be DNS-poisoned, and the person on the other end may not be able to reach a website at all. So ShadowShare gives you several ways to hand out an invite, and you can use whichever one gets through:
+
+- **A link**, shared through the phone's share sheet.
+- **An 8-character code**, which works anywhere text does: SMS, a voice call, a note on paper. The person types it into the web app or the bot.
+- **A Telegram bot.** Many people behind heavy censorship already reach Telegram, so the bot meets them where they are:
+  - `t.me/YourBot?start=ref_CODE` redeems an invite in one tap, and the bot also accepts a pasted code or link.
+  - The whole setup flow runs inside the chat, so the person never has to open the web app. That covers picking a language and an app, getting deep links and config, and reaching the dashboard.
+  - `/invite` gives each user a ready-to-forward share message with their link. You set its wording in the admin panel (`bot.shareMessageText`).
+  - The built-in MTProto proxy helps keep Telegram itself reachable, so the bot stays usable when Telegram is throttled.
+
+To turn on the bot, create one with [@BotFather](https://t.me/BotFather), set `BOT_TOKEN` and `BOT_USERNAME` in `.env`, and enable `service.bot` in the admin panel.
+
 ## When things get blocked
 
 <table>
