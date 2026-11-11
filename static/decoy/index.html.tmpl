@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>__BRAND__ - __TITLE_SUFFIX__</title>
+  <meta name="description" content="__BRAND__ __META_DESC__">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="logo">__BRAND1__<span>__BRAND2__</span></a>
+      <div class="nav-links">
+__NAV_LINKS__
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <h1>__HEADLINE__</h1>
+    <p>__TAGLINE__</p>
+    <div class="hero-actions">
+      <a href="#docs" class="btn btn-primary">__CTA1__</a>
+      <a href="#status" class="btn btn-secondary">__CTA2__</a>
+    </div>
+  </header>
+
+  <main>
+__MAIN__
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">__BRAND1__<span>__BRAND2__</span></div>
+      <div class="footer-links">
+        <a href="#">Terms</a>
+        <a href="#">Privacy</a>
+        <a href="#">Status</a>
+        <a href="#">Contact</a>
+      </div>
+      <p class="footer-copy">&copy; __YEAR__ __BRAND__ Inc. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('status-time').textContent =
+      new Date().toLocaleString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', timeZoneName: 'short'
+      });
+  </script>
+</body>
+</html>

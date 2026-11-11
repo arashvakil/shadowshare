@@ -1,0 +1,455 @@
+# ShadowShare Caddyfile template.
+#
+# Copy to ./Caddyfile. Every {$VAR} is read from Caddy's environment at startup
+# (docker-compose.yml passes them through from .env). Delete any site block you
+# don't use (e.g. the backup CDN domain or NaiveProxy) rather than leaving it empty.
+#
+# Requires a Caddy build with layer4, forward_proxy and the Cloudflare DNS module
+# (see docker/ for the image). Paths must match your Xray inbounds and CDN_* in .env.
+
+{
+	order forward_proxy before file_server
+
+	# Layer 4 SNI multiplexing — all TCP protocols share port 443.
+	# Caddy inspects the TLS ClientHello SNI and routes to the correct backend
+	# without decrypting. This makes every protocol look like standard HTTPS on 443.
+	layer4 {
+		:443 {
+			# Reality — SNI must match Xray realitySettings serverNames + dest (pick a site whitelisted in your target region)
+			@reality tls sni {$REALITY_SNI}
+			route @reality {
+				proxy marzban:2053
+			}
+
+			# ShadowTLS — SNI = SHADOWTLS_HANDSHAKE_SERVER (a real TLS 1.3 site)
+			# NOTE: uses different SNI than Reality so L4 can distinguish them
+			@shadowtls tls sni {$SHADOWTLS_HANDSHAKE_SERVER}
+			route @shadowtls {
+				proxy singbox:8444
+			}
+
+			# Trojan — uses the DIRECT_TLS_DOMAIN cert (DNS-01, no A record)
+			@trojan tls sni {$DIRECT_TLS_DOMAIN}
+			route @trojan {
+				proxy singbox:8447
+			}
+
+			@xhttp_reality tls sni {$XHTTP_REALITY_SNI}
+			route @xhttp_reality {
+				proxy marzban:2054
+			}
+
+			# MTProto Proxy — Telegram access via mtg FakeTLS
+			@mtproto tls sni {$MTPROTO_FAKETLS_DOMAIN}
+			route @mtproto {
+				proxy mtg:3128
+			}
+		}
+	}
+}
+
+# DNS-only TLS cert for direct protocols (Trojan, Hysteria2, TUIC).
+# No A record exists — cert obtained via DNS-01 challenge with Cloudflare API.
+# This avoids exposing the server IP through DNS or CT log correlation
+# with a known VPN domain.
+{$DIRECT_TLS_DOMAIN}:9443 {
+	tls {
+		dns cloudflare {env.CLOUDFLARE_DNS_API_TOKEN}
+	}
+	respond "Not Found" 404
+}
+
+{$NAIVE_PROXY_DOMAIN}:2083 {
+	tls internal
+	forward_proxy {
+		import /etc/caddy/naive-users
+		hide_ip
+		hide_via
+		probe_resistance
+	}
+	file_server {
+		root /srv/static
+	}
+}
+
+# NaiveProxy QUIC — real TLS cert via DNS-01, HTTP/3 enabled for QUIC transport
+{$DIRECT_TLS_DOMAIN}:37423 {
+	tls {
+		dns cloudflare {env.CLOUDFLARE_DNS_API_TOKEN}
+	}
+	forward_proxy {
+		import /etc/caddy/naive-users
+		hide_ip
+		hide_via
+		probe_resistance
+	}
+}
+
+{$ORIGIN_HOST}:8443 {
+	handle_path /admin/* {
+		reverse_proxy shadowshare:3896
+	}
+
+	handle /api/* {
+		reverse_proxy shadowshare:3101
+	}
+
+	@rsub path_regexp rsub ^/r/(.+)$
+	handle @rsub {
+		rewrite * /sub/{re.rsub.1}
+		reverse_proxy https://marzban:8880 {
+			transport http {
+				tls_insecure_skip_verify
+			}
+		}
+	}
+
+	handle /sub/* {
+		reverse_proxy https://marzban:8880 {
+			transport http {
+				tls_insecure_skip_verify
+			}
+		}
+	}
+
+	@feed path_regexp feed ^/feed/(.+)$
+	handle @feed {
+		rewrite * /sub/{re.feed.1}
+		reverse_proxy https://marzban:8880 {
+			transport http {
+				tls_insecure_skip_verify
+			}
+		}
+	}
+
+	handle /awg/* {
+		reverse_proxy shadowshare:3101
+	}
+
+	handle /app/* {
+		reverse_proxy shadowshare:3101
+	}
+
+	handle /app {
+		reverse_proxy shadowshare:3101
+	}
+
+	handle {
+		respond "Not Found" 404
+	}
+}
+
+{$CDN_SOURCE_DOMAIN}:80 {
+	@vless path {$CDN_WS_PATH}
+	handle @vless {
+		header Cache-Control "no-store"
+		reverse_proxy marzban:8080
+	}
+
+	@grpc path {$CDN_GRPC_PATH}/*
+	handle @grpc {
+		header Cache-Control "no-store"
+		reverse_proxy h2c://marzban:8081
+	}
+
+	@xhttp path {$CDN_XHTTP_PATH}/*
+	handle @xhttp {
+		header Cache-Control "no-store"
+		reverse_proxy marzban:8082 {
+			flush_interval -1
+			header_up X-Forwarded-For {remote_host}
+		}
+	}
+
+	@httpupgrade path {$CDN_HU_PATH}
+	handle @httpupgrade {
+		header Cache-Control "no-store"
+		rewrite * {$CDN_WS_PATH}
+		reverse_proxy marzban:8080
+	}
+
+	@rsub path_regexp rsub ^/r/(.+)$
+	handle @rsub {
+		rewrite * /sub/{re.rsub.1}
+		reverse_proxy https://marzban:8880 {
+			transport http {
+				tls_insecure_skip_verify
+			}
+		}
+	}
+
+	handle /sub/* {
+		reverse_proxy https://marzban:8880 {
+			transport http {
+				tls_insecure_skip_verify
+			}
+		}
+	}
+
+	@feed path_regexp feed ^/feed/(.+)$
+	handle @feed {
+		rewrite * /sub/{re.feed.1}
+		reverse_proxy https://marzban:8880 {
+			transport http {
+				tls_insecure_skip_verify
+			}
+		}
+	}
+
+	handle_path /app/dl/* {
+		root * /srv/static/dl
+		file_server
+	}
+
+	handle /app/* {
+		reverse_proxy shadowshare:3101
+	}
+
+	handle /app {
+		reverse_proxy shadowshare:3101
+	}
+
+	handle /api/* {
+		header Cache-Control "no-store"
+		reverse_proxy shadowshare:3101
+	}
+
+	handle /awg/* {
+		reverse_proxy shadowshare:3101
+	}
+
+	# Deep link redirect for Streisand app — uses request hostname (not hardcoded domain)
+	handle /open/* {
+		header Content-Type "text/html; charset=utf-8"
+		header cf-edge-cache "no-cache"
+		respond `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Opening Streisand...</title><script data-cfasync="false">var p=location.pathname.replace('/open/','');var u='streisand://import/'+location.origin+'/'+p;document.addEventListener('DOMContentLoaded',function(){document.getElementById('link').href=u});window.location=u;</script></head><body style="font-family:system-ui;text-align:center;padding:3rem 1rem"><h2>Opening Streisand...</h2><p>Redirecting to the app...</p><p><a id="link" href="#">Tap here if it didn't open</a></p><p style="margin-top:2rem;font-size:.85rem;color:#888">Don't have Streisand? <a href="https://apps.apple.com/app/streisand/id6450534064">Download it here</a></p></body></html>` 200
+	}
+
+	# Static decoy site for DPI probe resistance.
+	# Looks like a real CDN status page. Fully self-contained (no external JS/CSS).
+	handle {
+		root * /srv/static
+		file_server
+	}
+}
+
+{$CDN_CLEAN_DOMAIN}:80 {
+	@vless path {$CDN_WS_PATH}
+	handle @vless {
+		header Cache-Control "no-store"
+		reverse_proxy marzban:8080 {
+			header_up Host {$CDN_SOURCE_DOMAIN}
+		}
+	}
+
+	@grpc path {$CDN_GRPC_PATH}/*
+	handle @grpc {
+		header Cache-Control "no-store"
+		reverse_proxy h2c://marzban:8081 {
+			header_up Host {$CDN_SOURCE_DOMAIN}
+		}
+	}
+
+	@xhttp path {$CDN_XHTTP_PATH}/*
+	handle @xhttp {
+		header Cache-Control "no-store"
+		reverse_proxy marzban:8082 {
+			header_up Host {$CDN_SOURCE_DOMAIN}
+			flush_interval -1
+		}
+	}
+
+	@httpupgrade path {$CDN_HU_PATH}
+	handle @httpupgrade {
+		header Cache-Control "no-store"
+		rewrite * {$CDN_WS_PATH}
+		reverse_proxy marzban:8080 {
+			header_up Host {$CDN_SOURCE_DOMAIN}
+		}
+	}
+
+	handle_path /app/dl/* {
+		root * /srv/static/dl
+		file_server
+	}
+
+	handle /app/* {
+		reverse_proxy shadowshare:3101
+	}
+
+	handle /app {
+		reverse_proxy shadowshare:3101
+	}
+
+	handle /api/* {
+		header Cache-Control "no-store"
+		reverse_proxy shadowshare:3101
+	}
+
+	handle /awg/* {
+		reverse_proxy shadowshare:3101
+	}
+
+	@rsub path_regexp rsub ^/r/(.+)$
+	handle @rsub {
+		rewrite * /sub/{re.rsub.1}
+		reverse_proxy https://marzban:8880 {
+			transport http {
+				tls_insecure_skip_verify
+			}
+		}
+	}
+
+	handle /sub/* {
+		reverse_proxy https://marzban:8880 {
+			transport http {
+				tls_insecure_skip_verify
+			}
+		}
+	}
+
+	@feed path_regexp feed ^/feed/(.+)$
+	handle @feed {
+		rewrite * /sub/{re.feed.1}
+		reverse_proxy https://marzban:8880 {
+			transport http {
+				tls_insecure_skip_verify
+			}
+		}
+	}
+
+	# Deep link redirect for Streisand app
+	handle /open/* {
+		header Content-Type "text/html; charset=utf-8"
+		header cf-edge-cache "no-cache"
+		respond `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Opening Streisand...</title><script data-cfasync="false">var p=location.pathname.replace('/open/','');var u='streisand://import/'+location.origin+'/'+p;document.addEventListener('DOMContentLoaded',function(){document.getElementById('link').href=u});window.location=u;</script></head><body style="font-family:system-ui;text-align:center;padding:3rem 1rem"><h2>Opening Streisand...</h2><p>Redirecting to the app...</p><p><a id="link" href="#">Tap here if it didn't open</a></p><p style="margin-top:2rem;font-size:.85rem;color:#888">Don't have Streisand? <a href="https://apps.apple.com/app/streisand/id6450534064">Download it here</a></p></body></html>` 200
+	}
+
+	handle {
+		respond "Not Found" 404
+	}
+}
+
+{$CDN_BACKUP_DOMAIN}:80 {
+	@vless path {$CDN_WS_PATH}
+	handle @vless {
+		header Cache-Control "no-store"
+		reverse_proxy marzban:8080 {
+			header_up Host {$CDN_SOURCE_DOMAIN}
+		}
+	}
+
+	@grpc path {$CDN_GRPC_PATH}/*
+	handle @grpc {
+		header Cache-Control "no-store"
+		reverse_proxy h2c://marzban:8081 {
+			header_up Host {$CDN_SOURCE_DOMAIN}
+		}
+	}
+
+	@xhttp path {$CDN_XHTTP_PATH}/*
+	handle @xhttp {
+		header Cache-Control "no-store"
+		reverse_proxy marzban:8082 {
+			header_up Host {$CDN_SOURCE_DOMAIN}
+			flush_interval -1
+		}
+	}
+
+	@httpupgrade path {$CDN_HU_PATH}
+	handle @httpupgrade {
+		header Cache-Control "no-store"
+		rewrite * {$CDN_WS_PATH}
+		reverse_proxy marzban:8080 {
+			header_up Host {$CDN_SOURCE_DOMAIN}
+		}
+	}
+
+	handle_path /app/dl/* {
+		root * /srv/static/dl
+		file_server
+	}
+
+	handle /app/* {
+		reverse_proxy shadowshare:3101
+	}
+
+	handle /app {
+		reverse_proxy shadowshare:3101
+	}
+
+	handle /api/* {
+		header Cache-Control "no-store"
+		reverse_proxy shadowshare:3101
+	}
+
+	handle /awg/* {
+		reverse_proxy shadowshare:3101
+	}
+
+	@rsub path_regexp rsub ^/r/(.+)$
+	handle @rsub {
+		rewrite * /sub/{re.rsub.1}
+		reverse_proxy https://marzban:8880 {
+			transport http {
+				tls_insecure_skip_verify
+			}
+		}
+	}
+
+	handle /sub/* {
+		reverse_proxy https://marzban:8880 {
+			transport http {
+				tls_insecure_skip_verify
+			}
+		}
+	}
+
+	@feed path_regexp feed ^/feed/(.+)$
+	handle @feed {
+		rewrite * /sub/{re.feed.1}
+		reverse_proxy https://marzban:8880 {
+			transport http {
+				tls_insecure_skip_verify
+			}
+		}
+	}
+
+	# Deep link redirect for Streisand app
+	handle /open/* {
+		header Content-Type "text/html; charset=utf-8"
+		header cf-edge-cache "no-cache"
+		respond `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Opening Streisand...</title><script data-cfasync="false">var p=location.pathname.replace('/open/','');var u='streisand://import/'+location.origin+'/'+p;document.addEventListener('DOMContentLoaded',function(){document.getElementById('link').href=u});window.location=u;</script></head><body style="font-family:system-ui;text-align:center;padding:3rem 1rem"><h2>Opening Streisand...</h2><p>Redirecting to the app...</p><p><a id="link" href="#">Tap here if it didn't open</a></p><p style="margin-top:2rem;font-size:.85rem;color:#888">Don't have Streisand? <a href="https://apps.apple.com/app/streisand/id6450534064">Download it here</a></p></body></html>` 200
+	}
+
+	handle {
+		respond "Not Found" 404
+	}
+}
+
+# Plain-HTTP origin block for relays that reach the server directly on :80
+# (the Cloudflare Worker relay in worker-relay/, or another CDN such as CloudFront).
+# Add more hostnames to the site address as needed.
+# http:// prefix disables Caddy auto-HTTPS redirect for this block.
+http://{$ORIGIN_HOST}:80 {
+	@vless path {$CDN_WS_PATH}
+	handle @vless {
+		header Cache-Control "no-store"
+		reverse_proxy marzban:8080 {
+			header_up Host {$CDN_SOURCE_DOMAIN}
+		}
+	}
+
+	@httpupgrade path {$CDN_HU_PATH}
+	handle @httpupgrade {
+		header Cache-Control "no-store"
+		rewrite * {$CDN_WS_PATH}
+		reverse_proxy marzban:8080 {
+			header_up Host {$CDN_SOURCE_DOMAIN}
+		}
+	}
+
+	handle {
+		respond "Not Found" 404
+	}
+}

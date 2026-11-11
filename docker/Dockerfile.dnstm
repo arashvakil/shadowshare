@@ -1,0 +1,47 @@
+FROM golang:1.22-bookworm AS builder
+
+# Build slipstream tunnel server (Go port — QUIC-over-DNS)
+RUN git clone --depth 1 https://github.com/getlantern/slipstream.git /build/slipstream && \
+    cd /build/slipstream && \
+    go build -o /usr/local/bin/slipstream-server ./cmd/slipstream-server
+
+# Build dnstt-server (NoizDNS variant with uTLS for DPI evasion)
+RUN git clone --depth 1 https://github.com/pjanisze/dnstt-uTLS.git /build/dnstt && \
+    cd /build/dnstt/dnstt-server && \
+    go build -o /usr/local/bin/dnstt-server .
+
+# Build badvpn-udpgw (UDP gateway for SSH VPN tunnels)
+RUN apt-get update && apt-get install -y --no-install-recommends cmake && rm -rf /var/lib/apt/lists/*
+RUN git clone --depth 1 https://github.com/ambrop72/badvpn.git /build/badvpn && \
+    cd /build/badvpn && \
+    mkdir build && cd build && \
+    cmake .. -DBUILD_NOTHING_BY_DEFAULT=1 -DBUILD_UDPGW=1 && \
+    make -j$(nproc) && \
+    cp udpgw/badvpn-udpgw /usr/local/bin/badvpn-udpgw
+
+# MasterDnsVPN requires Go 1.25+ — separate builder stage
+FROM golang:1.25-bookworm AS mdvpn-builder
+RUN git clone --depth 1 https://github.com/masterking32/MasterDnsVPN.git /build/masterdnsvpn && \
+    cd /build/masterdnsvpn && \
+    go build -o /usr/local/bin/masterdnsvpn-server ./cmd/server
+
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates python3 dropbear socat && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create tunnel user for SSH relay
+RUN useradd -m -s /bin/sh tunnel
+
+COPY --from=builder /usr/local/bin/slipstream-server /usr/local/bin/slipstream-server
+COPY --from=builder /usr/local/bin/dnstt-server /usr/local/bin/dnstt-server
+COPY --from=builder /usr/local/bin/badvpn-udpgw /usr/local/bin/badvpn-udpgw
+COPY --from=mdvpn-builder /usr/local/bin/masterdnsvpn-server /usr/local/bin/masterdnsvpn-server
+COPY dnstm-entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 53/udp
+EXPOSE 53/tcp
+
+ENTRYPOINT ["/entrypoint.sh"]

@@ -1,0 +1,54 @@
+name: Report from a censored network
+description: A protocol stopped working, or started working, on a specific network.
+labels: [network-report]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        These reports are how ShadowShare keeps up with blocking. Thank you.
+
+        **Stay safe.** This issue is public. Use an account that isn't linked to your real name. Don't include your city, ISP account details, server IP, domains, paths or keys. A country and the network type are enough.
+  - type: input
+    id: country
+    attributes:
+      label: Country
+    validations:
+      required: true
+  - type: dropdown
+    id: network
+    attributes:
+      label: Network type
+      options: [Mobile data, Home broadband, Office / university, Public Wi-Fi, Not sure]
+    validations:
+      required: true
+  - type: input
+    id: isp
+    attributes:
+      label: ISP or carrier (optional)
+      description: Only the brand name, nothing that identifies you.
+  - type: checkboxes
+    id: working
+    attributes:
+      label: Which connections WORK right now?
+      options:
+        - label: auto (CDN)
+        - label: Reality
+        - label: ShadowTLS
+        - label: Trojan
+        - label: Worker relay (WS-Worker / HU-Worker)
+        - label: Hysteria2 / TUIC
+        - label: AmneziaWG
+        - label: OpenVPN + Cloak
+        - label: SSH tunnel (NPV)
+        - label: DNS tunnel
+        - label: MTProto proxy (Telegram)
+  - type: textarea
+    id: notes
+    attributes:
+      label: What changed, and since when?
+      placeholder: e.g. Reality stopped working on mobile data two days ago; CDN still works.
+  - type: input
+    id: app
+    attributes:
+      label: Client app and version
+      placeholder: sing-box 1.11.4 (iOS)

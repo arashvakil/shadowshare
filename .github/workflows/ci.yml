@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  # Must match the sing-box image tag in docker-compose.yml (checked below).
+  SING_BOX_VERSION: 1.14.4
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Typecheck + build
+        run: npm run build
+      - name: Migrations apply cleanly to a fresh database
+        env:
+          DATABASE_PATH: ${{ runner.temp }}/ci.db
+          TELEGRAM_ID_SALT: ci-only
+        run: npx tsx src/db/migrate.ts
+      - name: sing-box binary (pinned, same as docker-compose.yml)
+        run: |
+          grep -q "ghcr.io/sagernet/sing-box:v${SING_BOX_VERSION}" docker-compose.yml \
+            || { echo "docker-compose.yml sing-box tag != SING_BOX_VERSION ($SING_BOX_VERSION)"; exit 1; }
+          curl -fsSL "https://github.com/SagerNet/sing-box/releases/download/v${SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz" \
+            | tar -xz -C "$RUNNER_TEMP"
+          echo "SING_BOX_BIN=$RUNNER_TEMP/sing-box-${SING_BOX_VERSION}-linux-amd64/sing-box" >> "$GITHUB_ENV"
+      - name: Tests (incl. `sing-box check` on the generated server config)
+        run: npm test
+
+  scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: shellcheck
+        run: shellcheck -S warning setup.sh scripts/*.sh docker-entrypoint.sh docker/*.sh server-scripts/*.sh
+      - name: setup.sh fills every generated value and is idempotent
+        run: |
+          ./setup.sh > /dev/null
+          for k in TELEGRAM_ID_SALT ADMIN_PASSWORD ADMIN_SESSION_SECRET MARZBAN_PASSWORD AWG_S1 AWG_H1 AWG_JC MTPROTO_SECRET; do
+            grep -qE "^$k=.+" .env || { echo "setup.sh left $k empty"; exit 1; }
+          done
+          ! grep -qE '^CDN_(WS|HU)_PATH=/(ws|hu)$' .env || { echo "setup.sh kept a default path"; exit 1; }
+          ! grep -q '"privateKey": ""' marzban-data/xray_config.json || { echo "Reality key not generated"; exit 1; }
+          python3 -m json.tool marzban-data/xray_config.json > /dev/null
+          ! grep -q '__[A-Z0-9_]*__' static/index.html static/style.css
+          [ "$(./setup.sh | grep -c '  set ')" = 0 ] || { echo "re-running setup.sh changed values"; exit 1; }
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        run: |
+          if [ -d ops ]; then
+            # Private ops overlay: its history and ops/ hold deployment secrets by design.
+            # Scan only what `git archive` would publish (export-ignore applied).
+            mkdir -p "$RUNNER_TEMP/export"
+            git archive HEAD | tar -x -C "$RUNNER_TEMP/export"
+            docker run --rm -v "$RUNNER_TEMP/export:/repo" zricethezav/gitleaks:v8.30.1 \
+              detect --no-git --source /repo --redact --verbose
+          else
+            docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.30.1 \
+              detect --source /repo --redact --verbose
+          fi

@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS dns_resolvers (
+  ip TEXT PRIMARY KEY,
+  latency_ms REAL,
+  edns_size INTEGER,
+  rank INTEGER NOT NULL,
+  verified_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

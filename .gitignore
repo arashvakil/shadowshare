@@ -1,0 +1,30 @@
+node_modules/
+dist/
+data/
+.env
+*.db
+*.db-journal
+*.db-wal
+
+# Runtime data - don't push to repo
+marzban-data/
+.playwright-mcp/
+.env.marzban
+*.pem
+
+# Secrets and local state (never commit)
+.env.*
+!.env.example
+!.env.marzban.example
+*.key
+*.bak
+*.orig
+xray_config.json
+.claude/
+.DS_Store
+coverage/
+
+# Generated per install by scripts/gen-decoy.sh (never commit: shared decoys are fingerprintable)
+static/index.html
+static/style.css
+static/robots.txt

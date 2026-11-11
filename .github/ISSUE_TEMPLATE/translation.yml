@@ -1,0 +1,22 @@
+name: Translation
+description: Offer to add or improve a language.
+labels: [translation]
+body:
+  - type: input
+    id: language
+    attributes:
+      label: Language
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: New language or a fix?
+      options: [New language, Fix existing strings]
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything we should know?
+      description: Script direction (RTL?), regional variants, informal vs formal tone.

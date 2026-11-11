@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `ovpn_cloak_config` text;
