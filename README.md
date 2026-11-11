@@ -31,6 +31,7 @@ Public VPN services in Iran, China and Russia get found and blocked within days.
 
 - **About a minute from link to connected.** Open the link, pick a language, tap "Add to sing-box", done.
 - **Many protocols in one profile.** VLESS over CDN, Reality, ShadowTLS, Trojan and more. If one gets blocked, the user picks another from the same profile; no re-import needed.
+- **Runs on almost nothing.** One $6/month VPS has served thousands of users.
 - **Fallbacks for the worst days.** SSH and DNS tunnels for when nothing else gets through, and an MTProto proxy that keeps Telegram working.
 - **Built for the people using it.** Native Farsi with right-to-left layout and Finglish, large touch targets, QR codes, one-tap import.
 - **Nothing worth seizing.** No emails, no phone numbers, no passwords. Telegram IDs are HMAC-hashed and web tokens are 256-bit.
@@ -178,7 +179,7 @@ Caddy: :80 CDN backends · :443 L4 SNI router · :8443 admin/API/subscriptions
 
 ## Quick start
 
-You need a VPS with Docker, a domain on Cloudflare (the free plan is fine), and about 30 minutes.
+You need a VPS with Docker (a $6/month one is plenty), a domain on Cloudflare (the free plan is fine), and about 30 minutes.
 
 ```bash
 git clone https://github.com/arashvakil/shadowshare.git
