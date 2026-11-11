@@ -27,7 +27,7 @@
 
 ---
 
-Public VPN services in Iran, China and Russia get found and blocked within days. ShadowShare takes a different approach: **small, private networks of trust**. You run a server, invite a few people, and they invite a few more. There's no public sign-up page to find, and each server serves a handful of people instead of millions.
+Public VPN services in Iran, China and Russia get found and blocked within days. ShadowShare takes a different approach: **private networks of trust**. You run a server, invite a few people, and they invite a few more. There's no public sign-up page to find, so the network grows only through people who know each other.
 
 - **About a minute from link to connected.** Open the link, pick a language, tap "Add to sing-box", done.
 - **Many protocols in one profile.** VLESS over CDN, Reality, ShadowTLS, Trojan and more. If one gets blocked, the user picks another from the same profile; no re-import needed.
